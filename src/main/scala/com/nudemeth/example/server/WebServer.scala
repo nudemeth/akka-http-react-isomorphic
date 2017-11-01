@@ -1,40 +1,37 @@
 package com.nudemeth.example.server
 
 import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.io.StdIn
 
-object WebServer {
-  def main(args: Array[String]): Unit = {
-    implicit val system: ActorSystem = ActorSystem("my-system")
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
-    // needed for the future flatMap/onComplete in the end
-    implicit val executionContext: ExecutionContextExecutor = system.dispatcher
+object WebServer extends App {
+  private val server = WebServer()
+  server.start(ServerRoute.route)
+  StdIn.readLine() // let it run until user presses return
+  server.stop()
+}
 
-    val route =
-      concat (
-      path("hello") {
-        get {
-          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
-        }
-      }, path("") {
-          get {
-            val content = views.html.index.render()
-            complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, content.toString()))
-          }
-        }
-      )
+final case class WebServer() {
+  private implicit val system: ActorSystem = ActorSystem("akka-http-react-system")
+  private implicit val materializer: ActorMaterializer = ActorMaterializer()
+  // needed for the future flatMap/onComplete in the end
+  private implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-    val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
+  private var server: Future[Http.ServerBinding] = _
+  private lazy val log = Logging(system, classOf[WebServer])
 
-    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
-    StdIn.readLine() // let it run until user presses return
-    bindingFuture
+  def start(route: Route): Unit = {
+    server = Http().bindAndHandle(route, "localhost", 8080)
+    log.info(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+  }
+
+  def stop(): Unit = {
+    server
       .flatMap(_.unbind()) // trigger unbinding from the port
       .onComplete(_ => system.terminate()) // and shutdown when done
   }
