@@ -17,11 +17,18 @@ object WebServer {
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
     val route =
+      concat (
       path("hello") {
         get {
           complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
         }
-      }
+      }, path("") {
+          get {
+            val content = views.html.index.render()
+            complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, content.toString()))
+          }
+        }
+      )
 
     val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
 
