@@ -1,3 +1,7 @@
+# generated front-end files
+src/main/webapp/*
+src/main/node/node_modules/*
+
 ## generic files to ignore
 *~
 *.lock

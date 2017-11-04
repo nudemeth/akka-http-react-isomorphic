@@ -1,3 +1,9 @@
-@layouts.html.default("Welcome to akka-http"){
-<div id="body"><h1>Hello Twirl</h1></div>
+@(content: String, data: String)
+@layouts.html.default("Welcome to Akka-HTTP"){
+    <div id="body">@Html(content)</div>
+    <script type="text/javascript" src="./js/bundle.js"></script>
+    <script type="text/javascript">
+        var frontend = new com.nudemeth.example.web.Frontend();
+        frontend.renderClient(@Html(data));
+    </script>
 }

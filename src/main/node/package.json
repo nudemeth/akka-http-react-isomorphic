@@ -1,0 +1,24 @@
+{
+  "name": "node-tasks",
+  "version": "1.0.0",
+  "description": "to run node tasks",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "nudemeth",
+  "license": "ISC",
+  "private": true,
+  "devDependencies": {
+    "react": "15.6.x",
+    "react-dom": "15.6.x",
+    "webpack": "3.7.x",
+    "babel-core": "6.26.x",
+    "babel-preset-env": "1.6.x",
+    "babel-preset-react": "6.24.x",
+    "babel-preset-stage-2": "6.24.x",
+    "babel-loader": "7.1.x",
+    "babel-polyfill": "6.26.x",
+    "babel-plugin-transform-runtime": "6.23.x"
+  }
+}
