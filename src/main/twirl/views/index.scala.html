@@ -1,9 +1,9 @@
-@(content: String, data: String)
+@(container: String, model: String)
 @layouts.html.default("Welcome to Akka-HTTP"){
-    <div id="body">@Html(content)</div>
+    <div id="container">@Html(container)</div>
     <script type="text/javascript" src="./js/bundle.js"></script>
     <script type="text/javascript">
         var frontend = new com.nudemeth.example.web.Frontend();
-        frontend.renderClient(@Html(data));
+        frontend.renderClient(@Html(model));
     </script>
 }
