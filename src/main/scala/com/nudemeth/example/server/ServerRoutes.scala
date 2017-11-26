@@ -21,7 +21,7 @@ trait ServerRoutes extends JsonSupport {
     dataAbout,
   )
 
-  private lazy val nashorn: JavaScriptEngine = new NashornEngine(
+  private lazy val nashorn: JavaScriptEngine = NashornEngine(
     Seq(
       ScriptURL(getClass.getResource("/webapp/js/polyfill/nashorn-polyfill.js")),
       ScriptURL(getClass.getResource("/webapp/js/bundle.js")),
@@ -35,7 +35,6 @@ trait ServerRoutes extends JsonSupport {
         val model = HomeViewModel("This is Home page").toJson.compactPrint
         val content = nashorn.invokeMethod[String]("frontend", "renderServer", "/", model)
         val html = views.html.index.render(content, model).toString()
-        log.info(s"Request: route=/, method=get")
         complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, html))
       }
     }
@@ -48,7 +47,6 @@ trait ServerRoutes extends JsonSupport {
           val model = AboutViewModel("About page").toJson.compactPrint
           val content = nashorn.invokeMethod[String]("frontend", "renderServer", "/about", model)
           val html = views.html.index.render(content, model).toString()
-          log.info(s"Request: route=/, method=get")
           complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, html))
         }
       }
@@ -60,7 +58,6 @@ trait ServerRoutes extends JsonSupport {
       pathEndOrSingleSlash {
         get {
           val model = HomeViewModel("This is Home page").toJson.compactPrint
-          log.info(s"Request: route=/, method=get")
           complete(HttpEntity(ContentTypes.`application/json`, model))
         }
       }
@@ -72,7 +69,6 @@ trait ServerRoutes extends JsonSupport {
       pathEndOrSingleSlash {
         get {
           val model = AboutViewModel("About page").toJson.compactPrint
-          log.info(s"Request: route=/, method=get")
           complete(HttpEntity(ContentTypes.`application/json`, model))
         }
       }
@@ -82,7 +78,6 @@ trait ServerRoutes extends JsonSupport {
   private val js: Route = {
     get {
       pathPrefix("js" / Segment) { file =>
-        log.info(s"Request: route=/js/$file, method=get")
         val js = scala.io.Source.fromURL(getClass.getResource(s"/webapp/js/$file"))("UTF-8").mkString
         complete(HttpEntity(MediaTypes.`application/javascript` withCharset HttpCharsets.`UTF-8`, js))
       }
