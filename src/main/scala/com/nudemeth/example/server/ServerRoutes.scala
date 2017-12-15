@@ -7,6 +7,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.nudemeth.example.engine._
 import com.nudemeth.example.viewmodel._
+import com.nudemeth.example.web.engine.{JavaScriptEngine, NashornEngine}
 import spray.json._
 
 trait ServerRoutes extends JsonSupport {
@@ -21,19 +22,19 @@ trait ServerRoutes extends JsonSupport {
     dataAbout,
   )
 
-  private lazy val nashorn: JavaScriptEngine = NashornEngine(
+  private lazy val renderer: JavaScriptEngine = NashornEngine.instance.registerScripts(
     Seq(
       ScriptURL(getClass.getResource("/webapp/js/polyfill/nashorn-polyfill.js")),
       ScriptURL(getClass.getResource("/webapp/js/bundle.js")),
       ScriptText("var frontend = new com.nudemeth.example.web.Frontend();")
     )
-  )
+  ).build
 
   private val home: Route = {
     pathEndOrSingleSlash {
       get {
         val model = HomeViewModel("This is Home page").toJson.compactPrint
-        val content = nashorn.invokeMethod[String]("frontend", "renderServer", "/", model)
+        val content = renderer.invokeMethod[String]("frontend", "renderServer", "/", model)
         val html = views.html.index.render(content, model).toString()
         complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, html))
       }
@@ -45,7 +46,7 @@ trait ServerRoutes extends JsonSupport {
       pathEndOrSingleSlash {
         get {
           val model = AboutViewModel("About page").toJson.compactPrint
-          val content = nashorn.invokeMethod[String]("frontend", "renderServer", "/about", model)
+          val content = renderer.invokeMethod[String]("frontend", "renderServer", "/about", model)
           val html = views.html.index.render(content, model).toString()
           complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, html))
         }
@@ -82,5 +83,9 @@ trait ServerRoutes extends JsonSupport {
         complete(HttpEntity(MediaTypes.`application/javascript` withCharset HttpCharsets.`UTF-8`, js))
       }
     }
+  }
+
+  def stop(): Unit = {
+    renderer.destroy
   }
 }

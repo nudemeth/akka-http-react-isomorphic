@@ -1,36 +1,56 @@
-package com.nudemeth.example.engine
+package com.nudemeth.example.web.engine
 
-import javax.script.CompiledScript
+import javax.script.{Bindings, CompiledScript}
 
-import jdk.nashorn.api.scripting.{JSObject, NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
+import com.nudemeth.example.engine._
+import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
+import org.apache.commons.pool2.impl.{DefaultPooledObject, GenericObjectPool}
+import org.apache.commons.pool2.{BasePooledObjectFactory, ObjectPool, PooledObject}
+
+import scala.util.{Failure, Success, Try}
 
 object NashornEngine {
-  private[this] var instance: Option[NashornEngine] = None
-  def apply(scripts: Seq[ScriptSource]): NashornEngine = {
-    instance match {
-      case Some(_) =>
-      case None => instance = Some(new NashornEngine(scripts))
-    }
-    instance.get
-  }
+  val instance: NashornEngine = new NashornEngine()
 }
 
-sealed class NashornEngine(scripts: Seq[ScriptSource]) extends JavaScriptEngine(scripts) {
+sealed class NashornEngine private(allScripts: Option[String] = None, engine: Option[NashornScriptEngine] = None, bindingsPool: Option[ObjectPool[Bindings]] = None) extends JavaScriptEngine {
+
+  private val NUM_OF_INITIAL_OBJECT = 50
+
+  private class NashornBindingsFactory(engine: NashornScriptEngine, compiledScript: CompiledScript) extends BasePooledObjectFactory[Bindings] {
+    override def create(): Bindings = {
+      val bindings = engine.createBindings()
+      compiledScript.eval(bindings)
+      bindings
+    }
+
+    override def wrap(obj: Bindings): PooledObject[Bindings] = {
+      new DefaultPooledObject[Bindings](obj)
+    }
+  }
+
   /*
     Shared engine and compiled script. See links below:
     https://stackoverflow.com/questions/30140103/should-i-use-a-separate-scriptengine-and-compiledscript-instances-per-each-threa
     https://blogs.oracle.com/nashorn/nashorn-multithreading-and-mt-safety
   */
-  private val engine = new NashornScriptEngineFactory()
-    .getScriptEngine("-strict", "--no-java", "--no-syntax-extensions")
-    .asInstanceOf[NashornScriptEngine]
-
-  private val compiledScript: CompiledScript = {
-    val allScript = scripts.map{
+  override def registerScripts(scripts: Seq[ScriptSource]): JavaScriptEngine = {
+    new NashornEngine(Some(scripts.map{
       case ScriptText(s) => s
       case ScriptURL(s) => scala.io.Source.fromURL(s)("UTF-8").mkString
-    }.mkString(sys.props("line.separator"))
-    engine.compile(allScript)
+    }.mkString(sys.props("line.separator"))))
+  }
+
+  override def build: NashornEngine = {
+    if (allScripts.isEmpty) {
+      throw new UnsupportedOperationException("No scripts have been registered. Please call registerScripts method first.")
+    }
+    val engine = new NashornScriptEngineFactory()
+      .getScriptEngine("-strict", "--no-java", "--no-syntax-extensions")
+      .asInstanceOf[NashornScriptEngine]
+    val compiledScript = engine.compile(allScripts.get)
+    val bindingsPool = initializeBindingsPool(engine, compiledScript, NUM_OF_INITIAL_OBJECT)
+    new NashornEngine(allScripts, Some(engine), Some(bindingsPool))
   }
 
   /**
@@ -42,10 +62,39 @@ sealed class NashornEngine(scripts: Seq[ScriptSource]) extends JavaScriptEngine(
     * @return Instance of expected T type
     */
   override def invokeMethod[T](objectName: String, methodName: String, args: Any*): T = {
-    val bindings = engine.createBindings()
-    compiledScript.eval(bindings)
+    val tryResult = for {
+      bindings <- tryGetBindings
+      result <- tryInvokeMethod[T](bindings, objectName, methodName, args: _*)
+    } yield {
+      result
+    }
+
+    tryResult match {
+      case Failure(ex) => throw ex
+      case Success(r) => r
+    }
+  }
+
+  private def initializeBindingsPool(engine: NashornScriptEngine, compiledScript: CompiledScript , numOfInitialObject: Int): ObjectPool[Bindings] = {
+    val bindingsPool = new GenericObjectPool[Bindings](new NashornBindingsFactory(engine, compiledScript))
+    (0 until numOfInitialObject).foreach(_ => bindingsPool.addObject())
+    bindingsPool
+  }
+
+  private def tryGetBindings: Try[Bindings] = Try {
+    bindingsPool.get.borrowObject
+  }
+
+  private def tryInvokeMethod[T](bindings: Bindings, objectName: String, methodName: String, args: Any*): Try[T] = Try {
     val obj = bindings.get(objectName).asInstanceOf[ScriptObjectMirror]
-    obj.callMember(methodName, args.map(_.asInstanceOf[AnyRef]): _*).asInstanceOf[T]
+    val result = obj.callMember(methodName, args.map(_.asInstanceOf[AnyRef]): _*).asInstanceOf[T]
+    bindingsPool.get.returnObject(bindings)
+    result
+  }
+
+  override def destroy: Unit = {
+    bindingsPool.get.close()
+    super.destroy
   }
 
 }
