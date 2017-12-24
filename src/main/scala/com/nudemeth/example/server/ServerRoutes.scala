@@ -5,9 +5,8 @@ import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import com.nudemeth.example.engine._
 import com.nudemeth.example.viewmodel._
-import com.nudemeth.example.web.engine.{JavaScriptEngine, NashornEngine}
+import com.nudemeth.example.engine._
 import spray.json._
 
 trait ServerRoutes extends JsonSupport {
@@ -22,9 +21,9 @@ trait ServerRoutes extends JsonSupport {
     dataAbout,
   )
 
-  private lazy val renderer: JavaScriptEngine = NashornEngine.instance.registerScripts(
+  private lazy val renderer: JavaScriptEngine = J2V8Engine.instance.registerScripts(
     Seq(
-      ScriptURL(getClass.getResource("/webapp/js/polyfill/nashorn-polyfill.js")),
+      ScriptURL(getClass.getResource("/webapp/js/polyfill/j2v8-polyfill.js")),
       ScriptURL(getClass.getResource("/webapp/js/bundle.js")),
       ScriptText("var frontend = new com.nudemeth.example.web.Frontend();")
     )

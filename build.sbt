@@ -14,8 +14,18 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor"  % akkaVersion,
   "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
   "org.apache.commons" % "commons-pool2" % "2.4.3",
+  "com.eclipsesource.j2v8" % "j2v8_win32_x86_64" % "4.6.0",
+  "com.eclipsesource.j2v8" % "j2v8_linux_x86_64" % "4.6.0",
 )
 resourceGenerators.in(Compile) += buildFrontEndResource.init
+
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x => {
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+  }
+}
 
 enablePlugins(SbtTwirl)
 

@@ -1,6 +1,4 @@
-package com.nudemeth.example.web.engine
-
-import com.nudemeth.example.engine.ScriptSource
+package com.nudemeth.example.engine
 
 abstract class JavaScriptEngine {
   def registerScripts(scripts: Seq[ScriptSource]): JavaScriptEngine

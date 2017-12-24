@@ -1,8 +1,7 @@
-package com.nudemeth.example.web.engine
+package com.nudemeth.example.engine
 
 import javax.script.{Bindings, CompiledScript}
 
-import com.nudemeth.example.engine._
 import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
 import org.apache.commons.pool2.impl.{DefaultPooledObject, GenericObjectPool}
 import org.apache.commons.pool2.{BasePooledObjectFactory, ObjectPool, PooledObject}
