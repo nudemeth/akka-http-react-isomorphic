@@ -23,7 +23,7 @@ final case class WebServer() extends ServerRoutes {
 
 
   def start(): Unit = {
-    server = Http().bindAndHandle(route, "localhost", 8080)
+    server = Http().bindAndHandle(routes, "0.0.0.0", 8080)
     log.info(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
   }
 
