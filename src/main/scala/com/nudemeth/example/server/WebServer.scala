@@ -18,14 +18,11 @@ final case class WebServer() extends ServerRoutes {
   implicit val system: ActorSystem = ActorSystem("akka-http-react-system")
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
   private implicit val executionContext: ExecutionContextExecutor = system.dispatcher
-
-  val bindingAddress = "0.0.0.0"
-  val bindingPort = 8080
-  val shutdownTimeout = 60
+  private val config: ServerConfig = ServerConfig.config
 
   def start(): Unit = {
-    log.info(s"Starting server on $bindingAddress:$bindingPort")
-    Http().bindAndHandle(routes, bindingAddress, bindingPort)
+    log.info(s"Starting server on ${config.bindingAddress}:${config.bindingPort}")
+    Http().bindAndHandle(routes, config.bindingAddress, config.bindingPort)
       .onComplete {
         case Success(binding) =>
           val address = binding.localAddress
@@ -38,10 +35,10 @@ final case class WebServer() extends ServerRoutes {
   }
 
   override def stop(): Unit = {
-    log.info("Server is being shut down")
+    log.info(s"Server is being shut down")
     super.stop()
     system.terminate()
-    Await.result(system.whenTerminated, shutdownTimeout seconds)
+    Await.result(system.whenTerminated, config.shutdownTimeout)
   }
 
   private def registerShutdownHook(binding: ServerBinding): Unit = {

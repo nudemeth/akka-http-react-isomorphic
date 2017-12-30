@@ -13,22 +13,22 @@ trait ServerRoutes extends JsonSupport {
   implicit def system: ActorSystem
   def log: LoggingAdapter = Logging(system, this.getClass)
 
-  lazy val routes: Route = concat(
+  protected lazy val routes: Route = concat(
     pageRoutes,
     resourceRoutes,
     dataRoutes,
   )
 
-  lazy val pageRoutes: Route = concat(
+  private lazy val pageRoutes: Route = concat(
     home,
     about,
   )
 
-  lazy val resourceRoutes: Route = concat(
+  private lazy val resourceRoutes: Route = concat(
     js,
   )
 
-  lazy val dataRoutes: Route = concat(
+  private lazy val dataRoutes: Route = concat(
     dataHome,
     dataAbout,
   )

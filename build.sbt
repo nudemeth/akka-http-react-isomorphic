@@ -18,6 +18,7 @@ libraryDependencies ++= Seq(
   "org.apache.commons" % "commons-pool2" % "2.4.3",
   "com.eclipsesource.j2v8" % "j2v8_win32_x86_64" % "4.6.0",
   "com.eclipsesource.j2v8" % "j2v8_linux_x86_64" % "4.6.0",
+  "com.github.pureconfig" %% "pureconfig" % "0.8.0",
 )
 resourceGenerators.in(Compile) += buildFrontEndResource.init
 
