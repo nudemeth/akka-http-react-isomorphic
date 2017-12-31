@@ -7,7 +7,6 @@ import akka.stream.ActorMaterializer
 
 import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.util.{Failure, Success}
-import scala.concurrent.duration._
 
 object WebServer extends App {
   private val server = WebServer()

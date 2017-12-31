@@ -14,6 +14,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-slf4j"  % akkaVersion,
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
+  "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test",
+  "org.scalatest" %% "scalatest" % "3.0.4" % "test",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "org.apache.commons" % "commons-pool2" % "2.4.3",
   "com.eclipsesource.j2v8" % "j2v8_win32_x86_64" % "4.6.0",
