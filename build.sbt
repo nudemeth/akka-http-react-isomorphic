@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
   "com.eclipsesource.j2v8" % "j2v8_linux_x86_64" % "4.6.0",
   "com.github.pureconfig" %% "pureconfig" % "0.8.0",
 )
-resourceGenerators.in(Compile) += buildFrontEndResource.init
+resourceGenerators in Compile += buildFrontEndResource.init
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
@@ -31,6 +31,8 @@ assemblyMergeStrategy in assembly := {
     oldStrategy(x)
   }
 }
+
+test in assembly := {}
 
 enablePlugins(SbtTwirl)
 
