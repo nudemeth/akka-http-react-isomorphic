@@ -1,4 +1,5 @@
 import React from 'react';
+import TitleBar from '../browser/TitleBar.jsx';
 
 class Home extends React.Component {
     constructor(props) {
@@ -29,13 +30,16 @@ class Home extends React.Component {
         });
     }
 
-    componentDidMount = () => {
+    componentDidMount() {
         this.loadModelFromServer();
     }
 
     render() {
         return (
-            <h2>{this.state.model.greeting}</h2>
+            <div>
+                <TitleBar title={this.state.model.title} />
+                <h2>{this.state.model.greeting}</h2>
+            </div>
         );
     }
 }

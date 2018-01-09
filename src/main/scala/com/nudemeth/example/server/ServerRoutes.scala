@@ -44,9 +44,10 @@ trait ServerRoutes extends JsonSupport {
   private val home: Route = {
     pathEndOrSingleSlash {
       get {
-        val model = HomeViewModel("This is Home page").toJson.compactPrint
-        val content = renderer.invokeMethod[String]("frontend", "renderServer", "/", model)
-        val html = views.html.index.render(content, model).toString()
+        val model = new HomeViewModel("This is Home page")
+        val data = model.toJson.compactPrint
+        val content = renderer.invokeMethod[String]("frontend", "renderServer", "/", data)
+        val html = views.html.index.render(content, data, model.title).toString()
         complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, html))
       }
     }
@@ -56,9 +57,10 @@ trait ServerRoutes extends JsonSupport {
     path("about") {
       pathEndOrSingleSlash {
         get {
-          val model = AboutViewModel("About page").toJson.compactPrint
-          val content = renderer.invokeMethod[String]("frontend", "renderServer", "/about", model)
-          val html = views.html.index.render(content, model).toString()
+          val model = new AboutViewModel("About page")
+          val data = model.toJson.compactPrint
+          val content = renderer.invokeMethod[String]("frontend", "renderServer", "/about", data)
+          val html = views.html.index.render(content, data, model.title).toString()
           complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, html))
         }
       }
@@ -69,8 +71,8 @@ trait ServerRoutes extends JsonSupport {
     path("data" / "home") {
       pathEndOrSingleSlash {
         get {
-          val model = HomeViewModel("This is Home page").toJson.compactPrint
-          complete(HttpEntity(ContentTypes.`application/json`, model))
+          val data = new HomeViewModel("This is Home page").toJson.compactPrint
+          complete(HttpEntity(ContentTypes.`application/json`, data))
         }
       }
     }
@@ -80,8 +82,8 @@ trait ServerRoutes extends JsonSupport {
     path("data" / "about") {
       pathEndOrSingleSlash {
         get {
-          val model = AboutViewModel("About page").toJson.compactPrint
-          complete(HttpEntity(ContentTypes.`application/json`, model))
+          val data = new AboutViewModel("About page").toJson.compactPrint
+          complete(HttpEntity(ContentTypes.`application/json`, data))
         }
       }
     }

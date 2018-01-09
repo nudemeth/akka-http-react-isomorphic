@@ -1,5 +1,5 @@
-@(container: String, model: String)
-@layouts.html.default("Welcome to Akka-HTTP"){
+@(container: String, model: String, title: String)
+@layouts.html.default(title){
     <div id="container">@Html(container)</div>
     <script type="text/javascript" src="./js/bundle.js"></script>
     <script type="text/javascript">
